@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:random_string/random_string.dart';
 import 'package:thefoodstory/models/post.dart';
 import 'package:thefoodstory/models/user.dart';
 import 'package:thefoodstory/notifiers/auth_notifier.dart';
@@ -33,24 +36,7 @@ signup(User user, AuthNotifier authNotifier) async {
   String userImage;
 
   //Upload the Profile Picture to firebase storage
-  if (user.pictureFile != null) {
-    final FirebaseStorage firebaseStorage =
-        FirebaseStorage(storageBucket: 'gs://thefoodstory-558bb.appspot.com');
-
-    String filePath = 'images/${user.email}.png';
-
-    StorageReference ref = firebaseStorage.ref().child(filePath);
-
-    try {
-      StorageUploadTask uploadTask = ref.putFile(user.pictureFile);
-    } catch (e) {
-      print(e);
-    }
-
-    userImage = await ref.getDownloadURL();
-  } else {
-    print('PictureFile not found');
-  }
+  userImage = await uploadToStorage(user.pictureFile);
 
   //Continue with the user creation
   if (authResult != null) {
@@ -75,6 +61,33 @@ signup(User user, AuthNotifier authNotifier) async {
   }
 }
 
+Future<String> uploadToStorage(File file) async {
+  String url;
+
+  if (file != null) {
+    final FirebaseStorage firebaseStorage =
+    FirebaseStorage(storageBucket: 'gs://thefoodstory-558bb.appspot.com');
+
+    String filePath = 'images/${randomAlphaNumeric(10)}.png';
+
+    StorageReference ref = firebaseStorage.ref().child(filePath);
+
+    try {
+      StorageUploadTask uploadTask = ref.putFile(file);
+      StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+
+      url = await taskSnapshot.ref.getDownloadURL();
+    } catch (e) {
+      print(e);
+    }
+
+    return url;
+  } else {
+    print('PictureFile not found');
+  }
+  return null;
+}
+
 signout(AuthNotifier authNotifier) async {
   await FirebaseAuth.instance.signOut().catchError((e) => print(e));
   authNotifier.setFirebaseUser(null);
@@ -82,7 +95,7 @@ signout(AuthNotifier authNotifier) async {
 
 initializeCurrentUser(AuthNotifier authNotifier) async {
   FirebaseUser firebaseUser =
-      await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
+  await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
 
   if (firebaseUser != null) {
     authNotifier.setFirebaseUser(firebaseUser);
@@ -94,8 +107,7 @@ initializeCurrentUser(AuthNotifier authNotifier) async {
 //DATABASE RELATED FUNCTIONS
 
 //To upload the user info to the collection on firebase
-_createUser(
-    User user, FirebaseUser firebaseUser, AuthNotifier authNotifier) async {
+_createUser(User user, FirebaseUser firebaseUser, AuthNotifier authNotifier) async {
   var userRef = await Firestore.instance
       .collection('Users')
       .document(firebaseUser.uid)
@@ -108,11 +120,29 @@ _createUser(
   print('user uploaded ${user.toString()}');
 }
 
+createPost(Post post, File file, AuthNotifier authNotifier) async {
+  String image = await uploadToStorage(file);
+
+  post.imageUrl = image;
+
+  post.createdAt = Timestamp.now();
+
+  DocumentReference ref = Firestore.instance.collection('Posts').document();
+
+  ref.setData(post.toMap()).catchError((e) => print(e)).whenComplete(() async =>
+  await Firestore.instance
+      .collection('Users')
+      .document(authNotifier.user.uid)
+      .updateData({
+    'posts': FieldValue.arrayUnion([ref.documentID])
+  }));
+}
+
 // Use this to get the details of the user from the database
 getUserDetails(String userID, AuthNotifier authNotifier) async {
 //  print(userID);
   DocumentSnapshot snapshot =
-      await Firestore.instance.collection('Users').document(userID).get();
+  await Firestore.instance.collection('Users').document(userID).get();
 
   if (snapshot != null) {
     User user = User.fromMap(snapshot.data);
@@ -124,56 +154,12 @@ getUserDetails(String userID, AuthNotifier authNotifier) async {
 // To get the global Posts
 getGlobalPosts(PostNotifier postNotifier) async {
   FirebaseUser firebaseUser =
-      await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
+  await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
 
   QuerySnapshot snapshot =
-      await Firestore.instance.collection('Posts').getDocuments();
+  await Firestore.instance.collection('Posts').getDocuments();
 
   List<Post> _postList = [];
-
-  //NEW
-//  Stream<QuerySnapshot> postStream = Firestore.instance.collection('Posts').snapshots();
-//
-//  postStream.forEach((doc) {
-//    doc.documents.forEach((element) {
-//      if (firebaseUser.uid != element.documentID){
-//        // Get the Basic Details about the post
-//        Post post = Post.fromMap(element.data);
-//
-//        // Get the post id for future reference
-//        post.id = element.documentID;
-//
-//        if (element.data['likes'] != null && element.data['likes'].contains(firebaseUser.uid)){
-//          post.isLiked = true;
-//        } else {
-//          post.isLiked = false;
-//        }
-//
-//        Stream<DocumentSnapshot> userStream = Firestore.instance
-//            .collection('Users')
-//            .document(element.data['user'])
-//            .snapshots();
-//
-//        userStream.map((value) {
-//          // Use this to get basic details of the user
-//          post.userName = value.data['displayName'];
-//          post.userDp = value.data['profilePicture'];
-//
-//          // Use this to check if the current logged in user has followed this post's author/user
-//          if (value.data['followers'] != null && value.data['followers'].contains(firebaseUser.uid)){
-//            post.isFollowed = true;
-//          } else {
-//            post.isFollowed = false;
-//          }
-//        });
-//
-//        _postList.add(post);
-//      }
-//    });
-//  });
-//
-//  yield _postList;
-  // NEW ENDS
 
   await Future.forEach(snapshot.documents, (document) async {
     if (firebaseUser.email != document.data["email"]) {
@@ -221,31 +207,36 @@ getGlobalPosts(PostNotifier postNotifier) async {
 }
 
 //Used to get user's posts
-getOwnPosts(PostNotifier postNotifier) async {
+getOwnPosts(PostNotifier postNotifier, AuthNotifier authNotifier) async {
   FirebaseUser firebaseUser =
-      await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
+  await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
 
   QuerySnapshot snapshot = await Firestore.instance
       .collection('Posts')
-      .where('email', isEqualTo: firebaseUser.email)
+      .where('user', isEqualTo: firebaseUser.uid)
       .getDocuments();
 
   List<Post> _postList = [];
 
   await Future.forEach(snapshot.documents, (document) async {
-    if (firebaseUser.email != document.data["email"]) {
-      Post post = Post.fromMap(document.data);
-//       Use this to get user
-      await Firestore.instance
-          .collection('Users')
-          .document(document.data['user'])
-          .get()
-          .then((value) {
-        post.userName = value.data['displayName'];
-        post.userDp = value.data['profilePicture'];
-        print(value.data['displayName']);
-      }).whenComplete(() => _postList.add(post));
-    }
+//    if (firebaseUser.email != document.data["email"]) {
+//      Post post = Post.fromMap(document.data);
+////       Use this to get user
+//      await Firestore.instance
+//          .collection('Users')
+//          .document(document.data['user'])
+//          .get()
+//          .then((value) {
+//        post.userName = value.data['displayName'];
+//        post.userDp = value.data['profilePicture'];
+//        print(value.data['displayName']);
+//      }).whenComplete(() => _postList.add(post));
+//    }
+    Post post = Post.fromMap(document.data);
+    post.userName = authNotifier.userDetails.displayName;
+    post.userDp = authNotifier.userDetails.profilePicture;
+
+    _postList.add(post);
   });
 
   if (_postList.isEmpty) {
@@ -259,7 +250,7 @@ getOwnPosts(PostNotifier postNotifier) async {
 //Used to get the Saved Posts of the user.
 getSavedPosts(PostNotifier postNotifier) async {
   FirebaseUser firebaseUser =
-      await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
+  await FirebaseAuth.instance.currentUser().catchError((e) => print(e));
 
   DocumentSnapshot snapshot = await Firestore.instance
       .collection('Users')
@@ -271,7 +262,7 @@ getSavedPosts(PostNotifier postNotifier) async {
 
   await Future.forEach(snapshot.data['savedPosts'], (document) async {
     Post post;
-    //TODO: Use this to get user
+    //Use this to get user
     await Firestore.instance
         .collection('Posts')
         .document(document)

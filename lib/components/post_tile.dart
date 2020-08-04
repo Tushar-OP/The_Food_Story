@@ -8,16 +8,9 @@ import 'package:thefoodstory/notifiers/auth_notifier.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class PostTile extends StatefulWidget {
-  final String imgSrc;
-  final String userName;
-  final String userDp;
   final Post post;
 
-  PostTile(
-      {@required this.userName,
-      @required this.userDp,
-      @required this.imgSrc,
-      @required this.post});
+  PostTile({@required this.post});
 
   @override
   _PostTileState createState() => _PostTileState();
@@ -75,8 +68,11 @@ class _PostTileState extends State<PostTile> {
     bool liked = false;
 
     return Container(
-      height: size.height * 0.7,
+      constraints: BoxConstraints(
+        minHeight: size.height * 0.7,
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Divider(
             color: Colors.grey,
@@ -86,15 +82,15 @@ class _PostTileState extends State<PostTile> {
             child: Row(
               children: <Widget>[
                 CircleAvatar(
-                  backgroundImage: (widget.userDp != null)
-                      ? NetworkImage(widget.userDp)
+                  backgroundImage: (widget.post.userDp != null)
+                      ? NetworkImage(widget.post.userDp)
                       : NetworkImage(
                           "https://cdn0.iconfinder.com/data/icons/users-android-l-lollipop-icon-pack/24/user-128.png"),
                   radius: 16.0,
                 ),
                 FlatButton(
                   onPressed: () {},
-                  child: Text(widget.userName),
+                  child: Text(widget.post.userName),
                 ),
                 Expanded(
                   child: Container(),
@@ -102,15 +98,15 @@ class _PostTileState extends State<PostTile> {
                 (widget.post.isFollowed == true)
                     ? Container()
                     : RaisedButton(
-                        child: Text(
-                          'Follow',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        color: Colors.blue,
-                        onPressed: () {
-                          addToFollowers();
-                        },
-                      )
+                  child: Text(
+                    'Follow',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  color: Colors.blue,
+                  onPressed: () {
+                    addToFollowers();
+                  },
+                )
               ],
             ),
           ),
@@ -124,7 +120,7 @@ class _PostTileState extends State<PostTile> {
                 FadeInImage.memoryNetwork(
                   fit: BoxFit.cover,
                   placeholder: kTransparentImage,
-                  image: widget.imgSrc,
+                  image: widget.post.imageUrl,
                   width: size.width,
                   height: size.height * 0.5,
                 ),
@@ -138,44 +134,51 @@ class _PostTileState extends State<PostTile> {
               children: <Widget>[
                 (widget.post.isLiked == true)
                     ? LikeButton(
-                        isLiked: true,
-                      )
+                  isLiked: true,
+                )
                     : LikeButton(
-                        onTap: addToLikes,
-                      ),
+                  onTap: addToLikes,
+                ),
                 SizedBox(width: 10),
                 (widget.post.likes.length > 0)
                     ? Text(
-                        '${widget.post.likes.length}',
-                      )
+                  '${widget.post.likes.length}',
+                )
                     : Container(),
                 Expanded(child: Container()),
                 (authNotifier.userDetails.savedPosts != null &&
-                        authNotifier.userDetails.savedPosts
-                                .contains(widget.post.id) ==
-                            true)
+                    authNotifier.userDetails.savedPosts
+                        .contains(widget.post.id) ==
+                        true)
                     ? LikeButton(likeBuilder: (bool isLiked) {
-                        return Icon(
-                          Icons.bookmark,
-                          color:
-                              isLiked ? Colors.grey : Colors.deepPurpleAccent,
-                          size: 30,
-                        );
-                      })
+                  return Icon(
+                    Icons.bookmark,
+                    color:
+                    isLiked ? Colors.grey : Colors.deepPurpleAccent,
+                    size: 30,
+                  );
+                })
                     : LikeButton(
-                        likeBuilder: (bool isLiked) {
-                          return Icon(
-                            Icons.bookmark,
-                            color:
-                                isLiked ? Colors.deepPurpleAccent : Colors.grey,
-                            size: 30,
-                          );
-                        },
-                        onTap: addToFav,
-                      )
+                  likeBuilder: (bool isLiked) {
+                    return Icon(
+                      Icons.bookmark,
+                      color:
+                      isLiked ? Colors.deepPurpleAccent : Colors.grey,
+                      size: 30,
+                    );
+                  },
+                  onTap: addToFav,
+                )
               ],
             ),
-          )
+          ),
+          Padding(
+            padding: EdgeInsets.only(top: 15.0, right: 20.0, left: 10.0),
+            child: Text(
+              widget.post.description,
+              softWrap: true,
+            ),
+          ),
         ],
       ),
     );

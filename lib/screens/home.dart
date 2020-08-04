@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
               Tab(icon: Icon(Icons.home)),
               Tab(icon: Icon(Icons.search)),
               Tab(icon: Icon(Icons.favorite_border)),
-              Tab(icon: Icon(Icons.account_circle)),
+              Tab(icon: Icon(Icons.perm_identity)),
             ],
             unselectedLabelColor: Colors.grey,
             labelColor: Colors.blue,

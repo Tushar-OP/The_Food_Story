@@ -1,14 +1,13 @@
 //import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:thefoodstory/components/post_tile.dart';
-import 'package:thefoodstory/notifiers/auth_notifier.dart';
-import 'package:thefoodstory/notifiers/post_notifier.dart';
 import 'package:thefoodstory/api/api.dart';
+import 'package:thefoodstory/components/post_tile.dart';
+import 'package:thefoodstory/notifiers/post_notifier.dart';
+import 'package:thefoodstory/screens/create_post.dart';
 
 class Feed extends StatefulWidget {
   @override
@@ -58,6 +57,7 @@ class _FeedState extends State<Feed> {
           : (notifier.globalPostList.isEmpty)
               ? Center(child: CircularProgressIndicator())
               : Column(
+        mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Expanded(
                       child: (notifier.globalPostList.isEmpty)
@@ -66,23 +66,29 @@ class _FeedState extends State<Feed> {
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return PostTile(
-                                  userName:
-                                      notifier.globalPostList[index].userName,
-                                  userDp: notifier.globalPostList[index].userDp,
-                                  imgSrc:
-                                      notifier.globalPostList[index].imageUrl,
                                   post: notifier.globalPostList[index],
                                 );
                               },
-                              physics: ScrollPhysics(),
-                              itemCount: notifier.globalPostList.length,
-                              separatorBuilder: (context, index) {
-                                return SizedBox(height: 40.0);
-                              },
-                            ),
-                    ),
-                  ],
-                ),
+              physics: ScrollPhysics(),
+              itemCount: notifier.globalPostList.length,
+              separatorBuilder: (context, index) {
+                return SizedBox(height: 40.0);
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreatePost(),
+            ),
+          );
+        },
+      ),
     );
   }
 }

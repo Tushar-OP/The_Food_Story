@@ -57,9 +57,6 @@ class _FavouritesState extends State<Favourites> {
                           shrinkWrap: true,
                           itemBuilder: (context, index) {
                             return PostTile(
-                              userName: notifier.savedPostList[index].userName,
-                              userDp: notifier.savedPostList[index].userDp,
-                              imgSrc: notifier.savedPostList[index].imageUrl,
                               post: notifier.savedPostList[index],
                             );
                           },

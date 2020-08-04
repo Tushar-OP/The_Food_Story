@@ -3,8 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thefoodstory/api/api.dart';
-
-//import 'package:thefoodstory/components/post_tile.dart';
 import 'package:thefoodstory/notifiers/auth_notifier.dart';
 import 'package:thefoodstory/notifiers/post_notifier.dart';
 import 'package:thefoodstory/screens/detail.dart';
@@ -26,18 +24,32 @@ class _AccountInfoState extends State<AccountInfo> {
 
     PostNotifier postNotifier =
         Provider.of<PostNotifier>(context, listen: false);
-    getOwnPosts(postNotifier);
+    getOwnPosts(postNotifier, authNotifier);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     AuthNotifier authNotifier =
-        Provider.of<AuthNotifier>(context, listen: false);
+    Provider.of<AuthNotifier>(context, listen: false);
+
+    final int followersCount = (authNotifier.userDetails.followers == null)
+        ? 0
+        : authNotifier.userDetails.followers.length;
+
+    final int followingCount = (authNotifier.userDetails.following == null)
+        ? 0
+        : authNotifier.userDetails.following.length;
+
+    final int postsCount = (authNotifier.userDetails.posts == null)
+        ? 0
+        : authNotifier.userDetails.posts.length;
 
     PostNotifier postNotifier = Provider.of<PostNotifier>(context);
 
-    Size size = MediaQuery.of(context).size;
+    Size size = MediaQuery
+        .of(context)
+        .size;
 
     return WillPopScope(
       onWillPop: () async {
@@ -76,20 +88,21 @@ class _AccountInfoState extends State<AccountInfo> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
                   CircleAvatar(
+                    backgroundColor: Colors.transparent,
                     radius: 35.0,
                     child: ClipOval(
                       child: (authNotifier.user.photoUrl != null)
                           ? FadeInImage.memoryNetwork(
-                              fit: BoxFit.cover,
-                              placeholder: kTransparentImage,
-                              image: authNotifier.user.photoUrl,
-                              width: size.width,
-                              height: size.height * 0.5,
-                            )
+                        fit: BoxFit.cover,
+                        placeholder: kTransparentImage,
+                        image: authNotifier.user.photoUrl,
+                        width: size.width,
+                        height: size.height * 0.5,
+                      )
                           : Icon(
-                              Icons.account_circle,
-                              size: 70.0,
-                            ),
+                        Icons.account_circle,
+                        size: 70.0,
+                      ),
                     ),
                   ),
                   SizedBox(width: 50),
@@ -104,7 +117,7 @@ class _AccountInfoState extends State<AccountInfo> {
                             Column(
                               children: <Widget>[
                                 Text(
-                                  '2349',
+                                  '$postsCount',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -116,7 +129,7 @@ class _AccountInfoState extends State<AccountInfo> {
                             Column(
                               children: <Widget>[
                                 Text(
-                                  '249',
+                                  '$followersCount',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -128,7 +141,7 @@ class _AccountInfoState extends State<AccountInfo> {
                             Column(
                               children: <Widget>[
                                 Text(
-                                  '239',
+                                  '$followingCount',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -157,8 +170,11 @@ class _AccountInfoState extends State<AccountInfo> {
                 ],
               ),
             ),
-            Text(
-                'lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse semper, tortor vitae tincidunt laoreet, mauris risus dapibus turpis, ac bibendum diam arcu nec libero. Suspendisse non mauris'),
+            Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Text(
+                  'lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse semper, tortor vitae tincidunt laoreet, mauris risus dapibus turpis, ac bibendum diam arcu nec libero. Suspendisse non mauris'),
+            ),
             SizedBox(height: 20),
             Divider(
               color: Colors.grey,
@@ -198,11 +214,14 @@ class _AccountInfoState extends State<AccountInfo> {
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => Detail(
-                                          post: postNotifier.ownPostList[index],
-                                        )));
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    Detail(
+                                      post: postNotifier.ownPostList[index],
+                                    ),
+                              ),
+                            );
                           },
                           child: Image.network(
                             postNotifier.ownPostList[index].imageUrl,

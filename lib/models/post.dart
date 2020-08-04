@@ -17,6 +17,19 @@ class Post {
   String userDp;
   String userName;
 
+  Post();
+
+  Map<String, dynamic> toMap() {
+    return {
+      'image': imageUrl,
+      'description': description,
+      'user': user,
+      'email': email,
+      'likes': likes,
+      'createdAt': createdAt,
+    };
+  }
+
   Post.fromMap(Map<String, dynamic> data) {
     imageUrl = data['image'];
     description = data['description'];

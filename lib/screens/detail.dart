@@ -41,9 +41,6 @@ class _DetailState extends State<Detail> {
           ),
         ),
         body: PostTile(
-          userName: widget.post.userName,
-          userDp: widget.post.userDp,
-          imgSrc: widget.post.imageUrl,
           post: widget.post,
         ),
       ),
