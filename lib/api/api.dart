@@ -66,7 +66,7 @@ Future<String> uploadToStorage(File file) async {
 
   if (file != null) {
     final FirebaseStorage firebaseStorage =
-    FirebaseStorage(storageBucket: 'gs://thefoodstory-558bb.appspot.com');
+        FirebaseStorage(storageBucket: 'gs://thefoodstory-558bb.appspot.com');
 
     String filePath = 'images/${randomAlphaNumeric(10)}.png';
 
@@ -107,8 +107,9 @@ initializeCurrentUser(AuthNotifier authNotifier) async {
 //DATABASE RELATED FUNCTIONS
 
 //To upload the user info to the collection on firebase
-_createUser(User user, FirebaseUser firebaseUser, AuthNotifier authNotifier) async {
-  var userRef = await Firestore.instance
+_createUser(User user, FirebaseUser firebaseUser,
+    AuthNotifier authNotifier) async {
+  await Firestore.instance
       .collection('Users')
       .document(firebaseUser.uid)
       .setData(user.toMap());

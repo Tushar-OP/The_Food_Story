@@ -31,7 +31,7 @@ class _AccountInfoState extends State<AccountInfo> {
   @override
   Widget build(BuildContext context) {
     AuthNotifier authNotifier =
-    Provider.of<AuthNotifier>(context, listen: false);
+        Provider.of<AuthNotifier>(context, listen: false);
 
     final int followersCount = (authNotifier.userDetails.followers == null)
         ? 0
@@ -47,9 +47,7 @@ class _AccountInfoState extends State<AccountInfo> {
 
     PostNotifier postNotifier = Provider.of<PostNotifier>(context);
 
-    Size size = MediaQuery
-        .of(context)
-        .size;
+    Size size = MediaQuery.of(context).size;
 
     return WillPopScope(
       onWillPop: () async {

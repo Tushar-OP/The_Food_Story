@@ -44,7 +44,6 @@ class _PostTileState extends State<PostTile> {
   }
 
   addToFollowers() async {
-    bool liked = false;
     AuthNotifier authNotifier =
         Provider.of<AuthNotifier>(context, listen: false);
     await Firestore.instance
@@ -64,8 +63,8 @@ class _PostTileState extends State<PostTile> {
 
     AuthNotifier authNotifier = Provider.of<AuthNotifier>(context);
 
-    bool isFollowed = false;
-    bool liked = false;
+//    bool isFollowed = false;
+//    bool liked = false;
 
     return Container(
       constraints: BoxConstraints(

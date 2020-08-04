@@ -57,7 +57,7 @@ class _FeedState extends State<Feed> {
           : (notifier.globalPostList.isEmpty)
               ? Center(child: CircularProgressIndicator())
               : Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Expanded(
                       child: (notifier.globalPostList.isEmpty)
@@ -69,15 +69,15 @@ class _FeedState extends State<Feed> {
                                   post: notifier.globalPostList[index],
                                 );
                               },
-              physics: ScrollPhysics(),
-              itemCount: notifier.globalPostList.length,
-              separatorBuilder: (context, index) {
-                return SizedBox(height: 40.0);
-              },
-            ),
-          ),
-        ],
-      ),
+                              physics: ScrollPhysics(),
+                              itemCount: notifier.globalPostList.length,
+                              separatorBuilder: (context, index) {
+                                return SizedBox(height: 40.0);
+                              },
+                            ),
+                    ),
+                  ],
+                ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {

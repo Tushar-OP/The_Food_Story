@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,11 +14,13 @@ class UploadProfilePicture extends StatefulWidget {
 class _UploadProfilePictureState extends State<UploadProfilePicture> {
   File _imageFile;
 
+  final imagePicker = ImagePicker();
+
   _pickImage(ImageSource source) async {
-    File selected = await ImagePicker.pickImage(source: source);
+    final pickedFile = await imagePicker.getImage(source: source);
 
     setState(() {
-      _imageFile = selected;
+      _imageFile = File(pickedFile.path);
     });
   }
 
