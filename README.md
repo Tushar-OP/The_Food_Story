@@ -23,6 +23,18 @@
   <img alt="app gif" src="foodstory.gif" height=500px/>
   <br/>
   <br/>
+  Want to try out? Here's the recipe:
+  <br/>
+</p>
+
+```
+git clone https://github.com/Tushar-OP/The_Food_Story
+cd The_Food_Story
+flutter run
+```
+<p align="center">
+  <br/>
+  <br/>
   Liked it? <b>🌟 it!</b> 
   <br/>
   Loved it? <b>Contribute!</b>
